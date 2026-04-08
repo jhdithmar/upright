@@ -56,6 +56,13 @@ class Upright::Engine < ::Rails::Engine
     end
   end
 
+  initializer "upright.probe_types", before: :load_config_initializers do
+    Upright.register_probe_type :http, name: "HTTP", icon: "🌐"
+    Upright.register_probe_type :playwright, name: "Playwright", icon: "🎭"
+    Upright.register_probe_type :smtp, name: "SMTP", icon: "✉️"
+    Upright.register_probe_type :traceroute, name: "Traceroute", icon: "🛤️"
+  end
+
   initializer "upright.frozen_record" do
     FrozenRecord::Base.base_path = Upright.configuration.frozen_record_path
   end
