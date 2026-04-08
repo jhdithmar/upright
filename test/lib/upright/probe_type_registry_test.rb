@@ -47,18 +47,20 @@ class Upright::ProbeTypeRegistryTest < ActiveSupport::TestCase
   end
 
   test "built-in probe types are registered by the engine" do
-    assert_includes Upright.probe_types, "http"
-    assert_includes Upright.probe_types, "playwright"
-    assert_includes Upright.probe_types, "smtp"
-    assert_includes Upright.probe_types, "traceroute"
+    probe_types = Upright.probe_types
+
+    assert_includes probe_types.types, "http"
+    assert_includes probe_types.types, "playwright"
+    assert_includes probe_types.types, "smtp"
+    assert_includes probe_types.types, "traceroute"
   end
 
-  test "register_probe_type on Upright module adds to the global registry" do
-    Upright.register_probe_type :test_probe, name: "Test", icon: "🧪"
+  test "registering via config.probe_types adds to the registry" do
+    Upright.config.probe_types.register :test_probe, name: "Test", icon: "🧪"
 
-    assert_includes Upright.probe_types, "test_probe"
-    assert_equal "🧪", Upright.probe_type_registry.find(:test_probe).icon
+    assert_includes Upright.probe_types.types, "test_probe"
+    assert_equal "🧪", Upright.probe_types.find(:test_probe).icon
   ensure
-    Upright.probe_type_registry.instance_variable_get(:@probe_types).reject! { |pt| pt.type == "test_probe" }
+    Upright.probe_types.instance_variable_get(:@probe_types).reject! { |pt| pt.type == "test_probe" }
   end
 end

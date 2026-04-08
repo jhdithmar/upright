@@ -39,16 +39,8 @@ module Upright
       yield(configuration)
     end
 
-    def probe_type_registry
-      @probe_type_registry ||= ProbeTypeRegistry.new
-    end
-
-    def register_probe_type(type, name:, icon:)
-      probe_type_registry.register(type, name:, icon:)
-    end
-
     def probe_types
-      probe_type_registry.types
+      configuration.probe_types
     end
 
     def sites

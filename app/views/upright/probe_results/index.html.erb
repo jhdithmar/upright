@@ -2,7 +2,7 @@
   <aside>
     <ul>
       <li><%= type_filter_link "All" %></li>
-      <% Upright.probe_type_registry.each do |probe_type| %>
+      <% Upright.probe_types.each do |probe_type| %>
         <li><%= type_filter_link probe_type.name, probe_type.type %></li>
       <% end %>
     </ul>

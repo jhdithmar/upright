@@ -1,6 +1,6 @@
 module Upright::ProbeResultsHelper
   def probe_type_icon(probe_type)
-    registered = Upright.probe_type_registry.find(probe_type)
+    registered = Upright.probe_types.find(probe_type)
     content_tag(:span, registered.icon, title: registered.name)
   end
 

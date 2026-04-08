@@ -18,7 +18,7 @@ Upright.configure do |config|
   #   client_id: ENV["OIDC_CLIENT_ID"],
   #   client_secret: ENV["OIDC_CLIENT_SECRET"]
   # }
-end
 
-# Register custom probe types (built-in types: http, playwright, smtp, traceroute)
-# Upright.register_probe_type :ftp_file, name: "FTP File", icon: "📂"
+  # Register custom probe types (built-in types: http, playwright, smtp, traceroute)
+  # config.probe_types.register :ftp_file, name: "FTP File", icon: "📂"
+end
