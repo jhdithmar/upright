@@ -1,8 +1,7 @@
 module Upright::ProbeResultsHelper
   def probe_type_icon(probe_type)
     registered = Upright.probe_type_registry.find(probe_type)
-    icon = registered&.icon || "❓"
-    content_tag(:span, icon, title: registered&.name || probe_type.to_s.titleize)
+    content_tag(:span, registered.icon, title: registered.name)
   end
 
   def type_filter_link(label, probe_type = nil)
