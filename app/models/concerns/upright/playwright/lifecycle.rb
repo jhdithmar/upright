@@ -18,7 +18,7 @@ module Upright::Playwright::Lifecycle
   private
     def with_browser(&block)
       ::Playwright.create(playwright_cli_executable_path: Upright.configuration.playwright_cli_path) do |playwright|
-        playwright.chromium.launch(headless: !ENV["LOCAL_PLAYWRIGHT"], &block)
+        playwright.chromium.launch(headless: ENV.fetch("HEADLESS", "true") != "false", &block)
       end
     end
 
@@ -28,10 +28,11 @@ module Upright::Playwright::Lifecycle
       run_callbacks :page_ready
       yield
     ensure
-      run_callbacks :before_close
-      page&.close rescue Rails.error.report($!)
-      context&.close rescue Rails.error.report($!)
-      run_callbacks :page_close
+      run_callbacks :before_close if context
+      run_callbacks :page_close do
+        page&.close rescue Rails.error.report($!)
+        context&.close rescue Rails.error.report($!)
+      end
     end
 
     def create_context(browser, **options)

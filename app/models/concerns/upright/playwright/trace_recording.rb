@@ -1,8 +1,6 @@
 module Upright::Playwright::TraceRecording
   extend ActiveSupport::Concern
 
-  TRACE_VIEWER_URL = "/trace-viewer/index.html?trace="
-
   included do
     attr_accessor :trace_path
 
@@ -12,22 +10,14 @@ module Upright::Playwright::TraceRecording
 
   private
     def trace_dir
-      Upright.configuration.video_storage_dir
-    end
-
-    def record_trace?
-      !Rails.env.test?
+      Upright.configuration.recording_base_dir
     end
 
     def start_trace
-      return unless record_trace?
-
       context.tracing.start(screenshots: true, snapshots: true)
     end
 
     def stop_trace
-      return unless record_trace?
-
       self.trace_path = trace_dir.join("#{SecureRandom.hex}.zip").to_s
       FileUtils.mkdir_p(trace_dir)
       context.tracing.stop(path: trace_path)
@@ -44,8 +34,4 @@ module Upright::Playwright::TraceRecording
       self.trace_path = nil
     end
 
-    def trace_viewer_url(artifact)
-      blob_url = Rails.application.routes.url_helpers.rails_blob_url(artifact, expires_in: 24.hours)
-      "#{TRACE_VIEWER_URL}#{CGI.escape(blob_url)}"
-    end
 end

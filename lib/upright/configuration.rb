@@ -10,6 +10,7 @@ class Upright::Configuration
   # Storage paths
   attr_accessor :prometheus_dir
   attr_accessor :video_storage_dir
+  attr_accessor :recording_base_dir
   attr_accessor :storage_state_dir
   attr_accessor :frozen_record_path
 
@@ -44,6 +45,7 @@ class Upright::Configuration
 
     @prometheus_dir = nil
     @video_storage_dir = nil
+    @recording_base_dir = nil
     @storage_state_dir = nil
     @frozen_record_path = nil
     @probes_path = nil
@@ -76,6 +78,10 @@ class Upright::Configuration
 
   def video_storage_dir
     @video_storage_dir || Rails.root.join("storage", "playwright_videos")
+  end
+
+  def recording_base_dir
+    @recording_base_dir || Rails.root.join("storage", "playwright_recordings")
   end
 
   def storage_state_dir

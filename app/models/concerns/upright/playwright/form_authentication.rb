@@ -15,9 +15,9 @@ module Upright::Playwright::FormAuthentication
 
   private
     def ensure_authenticated
-      return unless authentication_service
-
-      authenticator_for(authentication_service).new.ensure_authenticated(context, page)
+      if authentication_service
+        authenticator_for(authentication_service).new.ensure_authenticated(context, page)
+      end
     end
 
     def authenticator_for(service)

@@ -31,5 +31,6 @@ module MockPlaywrightHelper
     def close = nil
     def on(event, callback) = nil
     def video = nil
+    def wait_for_load_state(**options) = nil
   end
 end

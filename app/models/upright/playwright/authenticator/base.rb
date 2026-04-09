@@ -32,11 +32,12 @@ class Upright::Playwright::Authenticator::Base
   def session_valid?
     wait_for_network_idle(page)
 
-    unless page.url.start_with?(signin_redirect_url)
+    if page.url == signin_redirect_url
+      true
+    else
       page.goto(signin_redirect_url, timeout: 10.seconds.in_ms)
+      !page.url.include?(signin_path)
     end
-
-    !page.url.include?(signin_path)
   end
 
   def session_valid_on?(page)
@@ -59,46 +60,45 @@ class Upright::Playwright::Authenticator::Base
   end
 
   private
+    def authenticate
+      raise NotImplementedError
+    end
 
-  def authenticate
-    raise NotImplementedError
-  end
-
-  def load_cached_storage_state(context)
-    if (cached_state = @storage_state.load)
-      cached_state.fetch("cookies", []).each do |cookie|
-        context.add_cookies([cookie])
+    def load_cached_storage_state(context)
+      if (cached_state = @storage_state.load)
+        cached_state.fetch("cookies", []).each do |cookie|
+          context.add_cookies([cookie])
+        end
       end
     end
-  end
 
-  def setup_page_logging(page)
-    if defined?(RailsStructuredLogging::Recorder)
-      RailsStructuredLogging::Recorder.instance.messages.tap do |messages|
+    def setup_page_logging(page)
+      if defined?(RailsStructuredLogging::Recorder)
+        RailsStructuredLogging::Recorder.instance.messages.tap do |messages|
+          page.on("response", ->(response) {
+            next if skip_logging?(response)
+            RailsStructuredLogging::Recorder.instance.sharing(messages)
+            log_response(response)
+          })
+        end
+      else
         page.on("response", ->(response) {
           next if skip_logging?(response)
-          RailsStructuredLogging::Recorder.instance.sharing(messages)
           log_response(response)
         })
       end
-    else
-      page.on("response", ->(response) {
-        next if skip_logging?(response)
-        log_response(response)
-      })
     end
-  end
 
-  def log_response(response)
-    headers = response.headers.slice("x-request-id", "x-runtime").compact
-    Rails.logger.info "#{response.status} #{response.request.resource_type.upcase} #{response.url} #{headers.to_query}"
-  end
+    def log_response(response)
+      headers = response.headers.slice("x-request-id", "x-runtime").compact
+      Rails.logger.info "#{response.status} #{response.request.resource_type.upcase} #{response.url} #{headers.to_query}"
+    end
 
-  def skip_logging?(response)
-    %w[image asset avatar].any? { |pattern| response.url.include?(pattern) }
-  end
+    def skip_logging?(response)
+      %w[image asset avatar].any? { |pattern| response.url.include?(pattern) }
+    end
 
-  def credentials
-    Rails.application.credentials
-  end
+    def credentials
+      Rails.application.credentials
+    end
 end
