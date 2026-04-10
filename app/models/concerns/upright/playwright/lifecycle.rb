@@ -17,7 +17,13 @@ module Upright::Playwright::Lifecycle
   private
     def with_browser(&block)
       ::Playwright.create(playwright_cli_executable_path: Upright.configuration.playwright_cli_path) do |playwright|
-        playwright.chromium.launch(headless: ENV.fetch("HEADLESS", "true") != "false", &block)
+        playwright.chromium.launch(headless: ENV.fetch("HEADLESS", "true") != "false", args: chromium_args, &block)
+      end
+    end
+
+    def chromium_args
+      [].tap do |args|
+        args << "--no-sandbox" if Rails.env.production? || ENV["PLAYWRIGHT_NO_SANDBOX"]
       end
     end
 
