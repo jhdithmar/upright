@@ -1,3 +1,4 @@
 module Upright
-  VERSION = "0.2.0"
+  VERSION = "0.3.0"
+  PLAYWRIGHT_VERSION = "1.59"
 end

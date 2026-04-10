@@ -10,6 +10,7 @@ class Upright::Configuration
   # Storage paths
   attr_accessor :prometheus_dir
   attr_accessor :video_storage_dir
+  attr_accessor :recording_base_dir
   attr_accessor :storage_state_dir
   attr_accessor :frozen_record_path
 
@@ -18,7 +19,7 @@ class Upright::Configuration
   attr_writer :authenticators_path
 
   # Playwright
-  attr_accessor :playwright_server_url
+  attr_accessor :playwright_cli_path
 
   # Authentication
   attr_accessor :auth_provider
@@ -44,6 +45,7 @@ class Upright::Configuration
 
     @prometheus_dir = nil
     @video_storage_dir = nil
+    @recording_base_dir = nil
     @storage_state_dir = nil
     @frozen_record_path = nil
     @probes_path = nil
@@ -51,7 +53,7 @@ class Upright::Configuration
 
     @probe_types = Upright::ProbeTypeRegistry.new
 
-    @playwright_server_url = ENV["PLAYWRIGHT_SERVER_URL"]
+    @playwright_cli_path = ENV.fetch("PLAYWRIGHT_CLI_PATH", "npx playwright")
     @otel_endpoint = ENV["OTEL_EXPORTER_OTLP_ENDPOINT"]
 
     @auth_provider = :static_credentials
@@ -76,6 +78,10 @@ class Upright::Configuration
 
   def video_storage_dir
     @video_storage_dir || Rails.root.join("storage", "playwright_videos")
+  end
+
+  def recording_base_dir
+    @recording_base_dir || Rails.root.join("storage", "playwright_recordings")
   end
 
   def storage_state_dir

@@ -79,12 +79,6 @@ accessories:
     roles:
       - jobs
 
-  playwright:
-    image: jacoblincool/playwright:chromium-server-1.55.0
-    port: "127.0.0.1:53333:53333"
-    roles:
-      - jobs
-
   prometheus:
     image: prom/prometheus:v3.2.1
     hosts:
