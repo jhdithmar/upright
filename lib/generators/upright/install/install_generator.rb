@@ -46,6 +46,7 @@ module Upright
 
       def copy_deploy_config
         template "deploy.yml", "config/deploy.yml"
+        template "Dockerfile", "Dockerfile"
       end
 
       def copy_puma_config
