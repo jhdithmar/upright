@@ -36,7 +36,8 @@ COPY Gemfile Gemfile.lock ./
 RUN --mount=type=secret,id=GITHUB_TOKEN \
     BUNDLE_GITHUB__COM="$(cat /run/secrets/GITHUB_TOKEN):x-oauth-basic" bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
-    bundle exec bootsnap precompile --gemfile
+    bundle exec bootsnap precompile --gemfile && \
+    bundle exec ruby -e "require 'upright/version'; puts Upright::PLAYWRIGHT_VERSION" > /tmp/playwright_version
 
 # Copy application code
 COPY . .
@@ -50,17 +51,19 @@ RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
 # Final stage for app image
 FROM base
 
-# Copy built artifacts: gems, application
-COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
-COPY --from=build /rails /rails
-
-# Install Playwright at the version pinned by the upright gem into a shared path
-# so the non-root rails user can access the browser binaries at runtime
+# Install Playwright before copying app code so the layer is cached on code-only deploys.
+# The version is extracted to a file in the build stage; BuildKit's content-based caching
+# keeps this layer cached even across Gemfile changes when the version is unchanged.
+COPY --from=build /tmp/playwright_version /tmp/playwright_version
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-RUN PLAYWRIGHT_VERSION=$(bundle exec ruby -e "require 'upright/version'; puts Upright::PLAYWRIGHT_VERSION") && \
+RUN PLAYWRIGHT_VERSION=$(cat /tmp/playwright_version) && \
     npm install -g playwright@~${PLAYWRIGHT_VERSION}.0 && \
     playwright install --with-deps chromium && \
     chmod -R o+rx /ms-playwright
+
+# Copy built artifacts: gems, application
+COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
+COPY --from=build /rails /rails
 
 # Run and own only the runtime files as a non-root user for security
 RUN groupadd --system --gid 1000 rails && \
