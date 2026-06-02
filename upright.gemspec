@@ -36,7 +36,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency "typhoeus"
 
   # Playwright (browser automation)
-  spec.add_dependency "playwright-ruby-client", "~> #{Upright::PLAYWRIGHT_VERSION}.0"
+  # Keep in sync with Upright::PLAYWRIGHT_VERSION in lib/upright/version.rb
+  spec.add_dependency "playwright-ruby-client", "~> 1.59.0"
 
   # Observability
   spec.add_dependency "prometheus-api-client"
