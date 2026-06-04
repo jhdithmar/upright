@@ -1,4 +1,4 @@
-class Upright::Rollups::ProbeRollup < Upright::ApplicationRecord
+class Upright::Rollups::ProbeRollup < Upright::PersistentRecord
   self.table_name = "upright_rollups_probe_rollups"
 
   enum :status, Upright::Status::VALUES, default: :operational
