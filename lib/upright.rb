@@ -50,6 +50,14 @@ module Upright
       )
     end
 
+    def metrics_environment
+      Rails.env.to_s unless Rails.env.local?
+    end
+
+    def environment_matcher
+      %(environment="#{metrics_environment}") if metrics_environment
+    end
+
     def sites
       @sites ||= load_sites
     end
