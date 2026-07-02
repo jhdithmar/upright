@@ -1,46 +1,53 @@
-<main>
-  <h1>Incidents &amp; maintenance</h1>
+<% content_for :title, "Incidents & maintenance" %>
 
-  <p>
-    <%= link_to "New incident", new_incident_path %> ·
-    <%= link_to "New maintenance", new_incident_path(maintenance: true) %>
-  </p>
+<div class="incidents-index">
+  <header class="incidents-header">
+    <h1 class="incidents-header__title">Incidents &amp; maintenance</h1>
+    <div class="incidents-actions">
+      <%= link_to "New incident", new_incident_path, class: "btn" %>
+      <%= link_to "New maintenance", new_incident_path(maintenance: true), class: "btn btn--ghost" %>
+    </div>
+  </header>
 
-  <% if @current.any? || @upcoming.any? %>
-    <h2>Active &amp; upcoming</h2>
-    <table>
-      <thead>
-        <tr><th>Title</th><th>Kind</th><th>Status</th><th>When</th><th></th></tr>
-      </thead>
-      <tbody>
-        <% (@current.to_a + @upcoming.to_a).each do |incident| %>
-          <tr>
-            <td><%= link_to incident.title, edit_incident_path(incident) %></td>
-            <td><%= incident.maintenance? ? "Maintenance" : "Incident" %></td>
-            <td><%= incident.status.humanize %></td>
-            <td><%= incident.starts_at.strftime("%b %-d, %H:%M %Z") %></td>
-            <td><%= link_to "Edit", edit_incident_path(incident) %></td>
-          </tr>
+  <% if @current.none? && @upcoming.none? && @past.none? %>
+    <div class="incidents-empty">
+      <p class="incidents-empty__headline">All clear</p>
+      <p class="incidents-empty__body">Nothing to report. Incidents and maintenance you declare here appear on the public status page.</p>
+    </div>
+  <% end %>
+
+  <% if @current.any? %>
+    <section class="incident-section">
+      <h2 class="incident-section__title">Active</h2>
+      <div class="incident-list">
+        <% @current.each do |incident| %>
+          <%= render "row", incident: incident,
+                when_label: incident.maintenance? ? maintenance_window_phrase(incident) : "Started #{incident.starts_at.strftime("%b %-d, %H:%M %Z")}" %>
         <% end %>
-      </tbody>
-    </table>
+      </div>
+    </section>
+  <% end %>
+
+  <% if @upcoming.any? %>
+    <section class="incident-section">
+      <h2 class="incident-section__title">Upcoming maintenance</h2>
+      <div class="incident-list">
+        <% @upcoming.each do |incident| %>
+          <%= render "row", incident: incident, when_label: maintenance_window_phrase(incident) %>
+        <% end %>
+      </div>
+    </section>
   <% end %>
 
   <% if @past.any? %>
-    <h2>Past</h2>
-    <table>
-      <thead>
-        <tr><th>Title</th><th>Kind</th><th>Resolved</th></tr>
-      </thead>
-      <tbody>
+    <section class="incident-section">
+      <h2 class="incident-section__title">Past</h2>
+      <div class="incident-list">
         <% @past.each do |incident| %>
-          <tr>
-            <td><%= link_to incident.title, edit_incident_path(incident) %></td>
-            <td><%= incident.maintenance? ? "Maintenance" : "Incident" %></td>
-            <td><%= incident.resolved_at&.strftime("%b %-d, %H:%M %Z") %></td>
-          </tr>
+          <%= render "row", incident: incident,
+                when_label: "Resolved #{incident.resolved_at&.strftime("%b %-d, %H:%M %Z")}" %>
         <% end %>
-      </tbody>
-    </table>
+      </div>
+    </section>
   <% end %>
-</main>
+</div>

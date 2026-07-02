@@ -1,5 +1,6 @@
-<main>
-  <h1>New <%= @incident.maintenance? ? "maintenance" : "incident" %></h1>
+<% content_for :title, "New #{@incident.maintenance? ? "maintenance" : "incident"}" %>
+
+<div class="incident-editor">
+  <%= link_to "← All incidents", incidents_path, class: "incident-editor__back" %>
   <%= render "form" %>
-  <p><%= link_to "Cancel", incidents_path %></p>
-</main>
+</div>
