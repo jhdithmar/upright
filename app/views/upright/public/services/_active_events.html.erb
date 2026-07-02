@@ -1,0 +1,28 @@
+<% events = incidents.to_a + maintenances.to_a %>
+<% if events.any? %>
+  <section class="events">
+    <% events.each do |event| %>
+      <article class="event event--<%= event.maintenance? ? "maintenance" : event.impact %>">
+        <div class="event__head">
+          <span class="event__title"><%= event.title %></span>
+          <span class="event__status"><%= status_label(event.status) %></span>
+        </div>
+
+        <% if event.maintenance? %>
+          <p class="event__meta"><%= maintenance_window_phrase(event) %></p>
+        <% end %>
+
+        <% if event.services.any? %>
+          <p class="event__services"><%= event.services.map(&:name).to_sentence %></p>
+        <% end %>
+
+        <% if update = event.updates.first %>
+          <p class="event__update">
+            <%= update.body %>
+            <time class="event__time" datetime="<%= update.created_at.iso8601 %>"><%= update.created_at.strftime("%b %-d, %H:%M %Z") %></time>
+          </p>
+        <% end %>
+      </article>
+    <% end %>
+  </section>
+<% end %>

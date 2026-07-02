@@ -4,6 +4,7 @@
     --status-degraded: oklch(78% 0.18 95);
     --status-partial: oklch(70% 0.18 50);
     --status-major: oklch(60% 0.21 28);
+    --status-maintenance: oklch(64% 0.14 250);
     --status-none: oklch(var(--lch-ink-lightest));
   }
 
@@ -40,6 +41,7 @@
   .status-banner--degraded { background: var(--status-degraded); color: oklch(20% 0 0); }
   .status-banner--partial_outage { background: var(--status-partial); }
   .status-banner--major_outage { background: var(--status-major); }
+  .status-banner--maintenance { background: var(--status-maintenance); }
 
   .status-banner__dot {
     background: currentColor;
@@ -116,6 +118,7 @@
   .service__status--degraded { color: var(--status-degraded); }
   .service__status--partial_outage { color: var(--status-partial); }
   .service__status--major_outage { color: var(--status-major); }
+  .service__status--maintenance { color: var(--status-maintenance); }
 
   .service__description {
     color: var(--color-ink-medium);
@@ -233,4 +236,69 @@
   .uptime__tooltip-dot--partial_outage { background: var(--status-partial); }
   .uptime__tooltip-dot--major_outage { background: var(--status-major); }
   .uptime__tooltip-dot--none { background: var(--status-none); }
+
+  .events,
+  .upcoming {
+    margin: calc(var(--block-space) * -2) 0 calc(var(--block-space) * 3);
+  }
+
+  .event,
+  .upcoming__item {
+    border: var(--border);
+    border-left: 3px solid var(--status-none);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .event + .event,
+  .upcoming__item + .upcoming__item {
+    margin-top: 0.5rem;
+  }
+
+  .event--minor { border-left-color: var(--status-degraded); }
+  .event--major { border-left-color: var(--status-partial); }
+  .event--critical { border-left-color: var(--status-major); }
+  .event--maintenance { border-left-color: var(--status-maintenance); }
+
+  .upcoming__title {
+    font-size: var(--text-large);
+    font-weight: 600;
+    margin: 0 0 0.75rem;
+  }
+
+  .event__head {
+    align-items: baseline;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+  }
+
+  .event__title { font-weight: 600; }
+
+  .event__status,
+  .upcoming__when {
+    color: var(--color-ink-medium);
+    flex-shrink: 0;
+    font-size: var(--text-small);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .event__meta,
+  .event__services {
+    color: var(--color-ink-medium);
+    font-size: var(--text-small);
+    margin: 0.35rem 0 0;
+  }
+
+  .event__update {
+    margin: 0.5rem 0 0;
+  }
+
+  .event__time {
+    color: var(--color-ink-medium);
+    display: block;
+    font-size: var(--text-x-small);
+    margin-top: 0.15rem;
+  }
 }

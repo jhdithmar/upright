@@ -1,0 +1,46 @@
+<main>
+  <h1>Incidents &amp; maintenance</h1>
+
+  <p>
+    <%= link_to "New incident", new_incident_path %> ·
+    <%= link_to "New maintenance", new_incident_path(maintenance: true) %>
+  </p>
+
+  <% if @current.any? || @upcoming.any? %>
+    <h2>Active &amp; upcoming</h2>
+    <table>
+      <thead>
+        <tr><th>Title</th><th>Kind</th><th>Status</th><th>When</th><th></th></tr>
+      </thead>
+      <tbody>
+        <% (@current.to_a + @upcoming.to_a).each do |incident| %>
+          <tr>
+            <td><%= link_to incident.title, edit_incident_path(incident) %></td>
+            <td><%= incident.maintenance? ? "Maintenance" : "Incident" %></td>
+            <td><%= incident.status.humanize %></td>
+            <td><%= incident.starts_at.strftime("%b %-d, %H:%M %Z") %></td>
+            <td><%= link_to "Edit", edit_incident_path(incident) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+
+  <% if @past.any? %>
+    <h2>Past</h2>
+    <table>
+      <thead>
+        <tr><th>Title</th><th>Kind</th><th>Resolved</th></tr>
+      </thead>
+      <tbody>
+        <% @past.each do |incident| %>
+          <tr>
+            <td><%= link_to incident.title, edit_incident_path(incident) %></td>
+            <td><%= incident.maintenance? ? "Maintenance" : "Incident" %></td>
+            <td><%= incident.resolved_at&.strftime("%b %-d, %H:%M %Z") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</main>

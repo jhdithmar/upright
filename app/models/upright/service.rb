@@ -1,5 +1,6 @@
 class Upright::Service < FrozenRecord::Base
   include Upright::Services::LiveStatus
+  include Upright::Services::MaintenanceStatus
 
   def self.file_path
     Upright.configuration.services_path.to_s
@@ -8,7 +9,8 @@ class Upright::Service < FrozenRecord::Base
   scope :public_facing, -> { where(public: true) }
 
   def self.overall_status
-    Upright::Status::PRIORITY.find { |status| all.any? { |service| service.live_status == status } } || :operational
+    candidates = all.reject(&:maintenance_active?)
+    Upright::Status::PRIORITY.find { |status| candidates.any? { |service| service.live_status == status } } || :operational
   end
 
   def self.by_history(past: 90.days)
@@ -17,6 +19,7 @@ class Upright::Service < FrozenRecord::Base
 
   def self.degraded
     all.filter_map do |service|
+      next if service.maintenance_active?
       status = service.live_status
       unless status == :operational
         { service: service, status: status, started_at: service.current_outage_started_at }

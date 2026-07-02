@@ -1,0 +1,5 @@
+<main>
+  <h1>New <%= @incident.maintenance? ? "maintenance" : "incident" %></h1>
+  <%= render "form" %>
+  <p><%= link_to "Cancel", incidents_path %></p>
+</main>

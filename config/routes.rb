@@ -17,6 +17,10 @@ Upright::Engine.routes.draw do
       resource :probe_status, only: :show
     end
 
+    resources :incidents do
+      resources :updates, only: :create, controller: "incidents/updates"
+    end
+
     scope :framed do
       resource :prometheus,   only: :show, controller: :prometheus_proxy
       resource :alertmanager, only: :show, controller: :alertmanager_proxy

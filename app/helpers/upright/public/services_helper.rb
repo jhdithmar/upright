@@ -3,11 +3,26 @@ module Upright::Public::ServicesHelper
     operational:    "All Systems Operational",
     degraded:       "Some Systems Degraded",
     partial_outage: "Partial Outage",
-    major_outage:   "Major Outage"
+    major_outage:   "Major Outage",
+    maintenance:    "Service Under Maintenance"
   }
 
   def overall_status_label(status)
     OVERALL_STATUS_LABELS.fetch(status)
+  end
+
+  # Human-readable phrase for a maintenance window, e.g. "Jul 5, 14:00–16:00 UTC".
+  def maintenance_window_phrase(maintenance)
+    start, finish = maintenance.starts_at, maintenance.ends_at
+    same_day = finish && start.to_date == finish.to_date
+
+    if same_day
+      "#{start.strftime("%b %-d, %H:%M")}–#{finish.strftime("%H:%M %Z")}"
+    elsif finish
+      "#{start.strftime("%b %-d, %H:%M")} – #{finish.strftime("%b %-d, %H:%M %Z")}"
+    else
+      start.strftime("%b %-d, %H:%M %Z")
+    end
   end
 
   def status_label(status)

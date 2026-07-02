@@ -14,5 +14,15 @@ xml.rss(version: "2.0") do
         xml.guid feed_item_guid(issue), isPermaLink: "false"
       end
     end
+
+    (@active_incidents.to_a + @active_maintenances.to_a).each do |event|
+      update = event.updates.first
+      xml.item do
+        xml.title "#{event.title} — #{status_label(event.status)}"
+        xml.description update&.body.to_s
+        xml.pubDate (update&.created_at || event.starts_at).rfc822
+        xml.guid "incident-#{event.id}-#{update&.id}", isPermaLink: "false"
+      end
+    end
   end
 end

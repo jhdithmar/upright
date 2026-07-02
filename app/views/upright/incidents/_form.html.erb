@@ -1,0 +1,59 @@
+<% url = @incident.new_record? ? incidents_path : incident_path(@incident) %>
+<%= form_with model: @incident, scope: :incident, url: url do |f| %>
+  <% if @incident.errors.any? %>
+    <ul class="form-errors">
+      <% @incident.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% if @incident.new_record? %>
+    <%= hidden_field_tag :maintenance, @incident.maintenance? %>
+  <% end %>
+
+  <p>
+    <%= f.label :title %><br>
+    <%= f.text_field :title %>
+  </p>
+
+  <% unless @incident.maintenance? %>
+    <p>
+      <%= f.label :impact %><br>
+      <%= f.select :impact, Upright::Incident::IMPACTS.map { |i| [ i.humanize, i ] } %>
+    </p>
+  <% end %>
+
+  <p>
+    <%= f.label :starts_at, @incident.maintenance? ? "Window start" : "Started at" %><br>
+    <%= f.datetime_field :starts_at %>
+  </p>
+
+  <% if @incident.maintenance? %>
+    <p>
+      <%= f.label :ends_at, "Window end" %><br>
+      <%= f.datetime_field :ends_at %>
+    </p>
+  <% end %>
+
+  <fieldset>
+    <legend>Affected services</legend>
+    <%= hidden_field_tag "incident[service_codes][]", "" %>
+    <% Upright::Service.all.each do |service| %>
+      <label>
+        <%= check_box_tag "incident[service_codes][]", service.code,
+              @incident.service_codes.include?(service.code), id: "service_#{service.code}" %>
+        <%= service.name %>
+      </label>
+    <% end %>
+  </fieldset>
+
+  <% if @incident.new_record? %>
+    <p>
+      <%= label_tag "incident[body]", "Initial message" %><br>
+      <%= text_area_tag "incident[body]", nil %>
+    </p>
+  <% end %>
+
+  <p><%= f.submit %></p>
+<% end %>
