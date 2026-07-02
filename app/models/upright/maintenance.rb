@@ -11,8 +11,6 @@ class Upright::Maintenance < Upright::Incident
   def maintenance? = true
 
   def auto_advance!(now: Time.current)
-    return if past?
-
     record_update(status: "in_progress", body: "Maintenance is underway.") if scheduled? && now >= starts_at
     record_update(status: "completed",  body: "Maintenance is complete.")  if in_progress? && now >= ends_at
   end
@@ -23,7 +21,6 @@ class Upright::Maintenance < Upright::Incident
     end
 
     def ends_after_start
-      return if ends_at.blank? || starts_at.blank?
-      errors.add(:ends_at, "must be after the start") if ends_at <= starts_at
+      errors.add(:ends_at, "must be after the start") if ends_at.present? && starts_at.present? && ends_at <= starts_at
     end
 end

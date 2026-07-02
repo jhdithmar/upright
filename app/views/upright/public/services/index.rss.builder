@@ -20,6 +20,7 @@ xml.rss(version: "2.0") do
       xml.item do
         xml.title "#{event.title} — #{status_label(event.status)}"
         xml.description update&.body.to_s
+        xml.link public_incident_url(event)
         xml.pubDate (update&.created_at || event.starts_at).rfc822
         xml.guid "incident-#{event.id}-#{update&.id}", isPermaLink: "false"
       end

@@ -21,19 +21,33 @@ class Upright::ServiceMaintenanceTest < ActiveSupport::TestCase
     assert_includes codes, "internal_tools"
   end
 
-  test "overall_status is operational when every down service is under maintenance" do
+  test "overall_status reads maintenance when the only down services are under maintenance" do
     Upright::Service.all.each do |service|
       Upright::Maintenance.create!(title: "m #{service.code}", status: "in_progress",
         starts_at: 1.hour.ago, ends_at: 1.hour.from_now, service_codes: [ service.code ])
     end
     Upright::Service.any_instance.stubs(:live_status).returns(:major_outage)
 
-    assert_equal :operational, Upright::Service.overall_status
+    assert_equal :maintenance, Upright::Service.overall_status
   end
 
   test "a real outage on another service still outranks maintenance" do
     Upright::Maintenance.create!(title: "m", status: "in_progress",
       starts_at: 1.hour.ago, ends_at: 1.hour.from_now, service_codes: [ "example_app" ])
+    Upright::Service.any_instance.stubs(:live_status).returns(:major_outage)
+
+    assert_equal :major_outage, Upright::Service.overall_status
+  end
+
+  test "an active incident raises the overall status even when probes are green" do
+    Upright::Incident.create!(title: "x", impact: "critical", starts_at: 1.hour.ago, service_codes: [ "example_app" ])
+    Upright::Service.any_instance.stubs(:live_status).returns(:operational)
+
+    assert_equal :major_outage, Upright::Service.overall_status
+  end
+
+  test "overall status takes the worse of probe status and incident impact" do
+    Upright::Incident.create!(title: "x", impact: "minor", starts_at: 1.hour.ago, service_codes: [ "example_app" ])
     Upright::Service.any_instance.stubs(:live_status).returns(:major_outage)
 
     assert_equal :major_outage, Upright::Service.overall_status

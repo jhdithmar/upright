@@ -9,6 +9,6 @@ class Upright::Incidents::UpdatesController < Upright::ApplicationController
 
   private
     def update_params
-      params.require(:incident_update).permit(:status, :body)
+      params.expect(incident_update: [ :status, :body ])
     end
 end

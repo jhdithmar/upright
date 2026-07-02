@@ -1,8 +1,7 @@
 <div class="status-page">
   <h1 class="status-page__title">Status</h1>
 
-  <% banner_status = @services.overall_status == :operational && @active_maintenances.any? ? :maintenance : @services.overall_status %>
-  <%= render "overall_banner", status: banner_status %>
+  <%= render "overall_banner", status: @services.overall_status %>
   <%= render "degraded_list", degraded: @services.degraded %>
 
   <%= render "active_events", incidents: @active_incidents, maintenances: @active_maintenances %>

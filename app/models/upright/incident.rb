@@ -1,6 +1,8 @@
 class Upright::Incident < Upright::PersistentRecord
   include Upright::Incidents::Lifecycle
 
+  attr_accessor :body
+
   enum :status, %w[ investigating monitoring resolved
                     scheduled in_progress completed ].index_with(&:itself)
   enum :impact, %w[ minor major critical maintenance ].index_with(&:itself), prefix: true
@@ -8,6 +10,12 @@ class Upright::Incident < Upright::PersistentRecord
   STATUSES          = %w[ investigating monitoring resolved ]
   TERMINAL_STATUSES = %w[ resolved ]
   IMPACTS           = %w[ minor major critical ]
+
+  IMPACT_STATUS = { "minor" => :degraded, "major" => :partial_outage, "critical" => :major_outage }
+
+  def self.active_statuses
+    reactive.active.map { |incident| IMPACT_STATUS.fetch(incident.impact) }
+  end
 
   has_many :updates, -> { order(created_at: :desc) },
     class_name: "Upright::IncidentUpdate", inverse_of: :incident, dependent: :destroy
@@ -17,6 +25,9 @@ class Upright::Incident < Upright::PersistentRecord
   validates :title, :starts_at, presence: true
   validates :status, inclusion: { in: ->(incident) { incident.class::STATUSES } }
   validates :impact, inclusion: { in: ->(incident) { incident.class::IMPACTS } }
+
+  before_validation :set_default_status, on: :create
+  after_create :record_initial_update
 
   def maintenance? = false
 
@@ -32,4 +43,17 @@ class Upright::Incident < Upright::PersistentRecord
   def services
     service_codes.filter_map { |code| Upright::Service.find_by(code: code) }
   end
+
+  private
+    def set_default_status
+      self.status ||= self.class::STATUSES.first
+    end
+
+    def record_initial_update
+      updates.create!(status: status, body: body.presence || default_initial_body)
+    end
+
+    def default_initial_body
+      maintenance? ? "Maintenance scheduled." : "We are investigating."
+    end
 end

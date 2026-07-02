@@ -1,4 +1,4 @@
-<% content_for :title, @incident.title %>
+<% @page_title = @incident.title %>
 
 <div class="incident-editor incident-editor--<%= @incident.maintenance? ? "maintenance" : @incident.impact %>">
   <%= link_to "← All incidents", incidents_path, class: "incident-editor__back" %>

@@ -21,11 +21,25 @@ class Upright::IncidentTest < ActiveSupport::TestCase
     incident.record_update(status: "monitoring", body: "Watching recovery.")
     assert_equal "monitoring", incident.reload.status
     assert_nil incident.resolved_at
-    assert_equal 1, incident.updates.count
+    assert_equal 2, incident.updates.count
 
     incident.record_update(status: "resolved", body: "All clear.")
     assert_equal "resolved", incident.reload.status
     assert_not_nil incident.resolved_at
+  end
+
+  test "creating an incident seeds an initial update from the default status" do
+    incident = Upright::Incident.create!(title: "x", impact: "minor", starts_at: Time.current, body: "Looking into it.")
+
+    assert_equal "investigating", incident.status
+    assert_equal 1, incident.updates.count
+    assert_equal "Looking into it.", incident.updates.first.body
+  end
+
+  test "active_statuses maps active reactive incident impact to a page status" do
+    Upright::Incident.create!(title: "x", impact: "major", starts_at: 1.hour.ago)
+
+    assert_equal [ :partial_outage ], Upright::Incident.active_statuses
   end
 
   test "service_codes= assigns affected services and rejects unknown codes" do

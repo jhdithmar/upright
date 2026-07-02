@@ -13,12 +13,10 @@ class Upright::IncidentsController < Upright::ApplicationController
   end
 
   def create
-    @incident = build_class.new(incident_params.except(:body))
-    @incident.status = @incident.maintenance? ? "scheduled" : "investigating"
+    @incident = build_class.new(incident_params)
 
     if @incident.save
-      @incident.updates.create!(status: @incident.status, body: initial_body)
-      redirect_to incidents_path, notice: "#{@incident.maintenance? ? "Maintenance" : "Incident"} created."
+      redirect_to incidents_path, notice: "#{@incident.model_name.human} created."
     else
       render :new, status: :unprocessable_entity
     end
@@ -28,7 +26,7 @@ class Upright::IncidentsController < Upright::ApplicationController
   end
 
   def update
-    if @incident.update(incident_params.except(:body))
+    if @incident.update(incident_params)
       redirect_to incidents_path, notice: "Saved."
     else
       render :edit, status: :unprocessable_entity
@@ -51,11 +49,6 @@ class Upright::IncidentsController < Upright::ApplicationController
     end
 
     def incident_params
-      params.require(:incident).permit(:title, :impact, :starts_at, :ends_at, :body, service_codes: [])
-    end
-
-    def initial_body
-      incident_params[:body].presence ||
-        (@incident.maintenance? ? "Maintenance scheduled." : "We are investigating.")
+      params.expect(incident: [ :title, :impact, :starts_at, :ends_at, :body, service_codes: [] ])
     end
 end
