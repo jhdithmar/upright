@@ -1,22 +1,26 @@
 require "test_helper"
 
 class Upright::IncidentTest < ActiveSupport::TestCase
+  setup { travel_to Time.utc(2026, 6, 15, 12) }
+
   test "a reactive incident is valid and is not a maintenance" do
-    incident = Upright::Incident.new(title: "DB slow", impact: "major", status: "investigating", starts_at: Time.current)
+    incident = upright_incidents(:reactive_resolved)
 
     assert incident.valid?
     assert_not incident.maintenance?
   end
 
   test "rejects a status outside the reactive lifecycle" do
-    incident = Upright::Incident.new(title: "x", impact: "minor", status: "scheduled", starts_at: Time.current)
+    incident = upright_incidents(:reactive_resolved)
+    incident.status = "scheduled"
 
     assert_not incident.valid?
     assert incident.errors[:status].any?
   end
 
   test "record_update appends an update, moves status, and stamps resolved_at on a terminal status" do
-    incident = Upright::Incident.create!(title: "x", impact: "minor", status: "investigating", starts_at: Time.current)
+    incident = upright_incidents(:reactive_resolved)
+    incident.update!(status: "investigating", resolved_at: nil)
 
     incident.record_update(status: "monitoring", body: "Watching recovery.")
     assert_equal "monitoring", incident.reload.status
@@ -37,13 +41,14 @@ class Upright::IncidentTest < ActiveSupport::TestCase
   end
 
   test "active_statuses maps active reactive incident impact to a page status" do
-    Upright::Incident.create!(title: "x", impact: "major", starts_at: 1.hour.ago)
+    incident = upright_incidents(:reactive_resolved)
+    incident.update!(impact: "major", status: "investigating", starts_at: 1.hour.ago, resolved_at: nil)
 
     assert_equal [ :partial_outage ], Upright::Incident.active_statuses
   end
 
   test "service_codes= assigns affected services and rejects unknown codes" do
-    incident = Upright::Incident.new(title: "x", impact: "minor", status: "investigating", starts_at: Time.current)
+    incident = upright_incidents(:reactive_resolved)
 
     incident.service_codes = [ "example_app" ]
     assert incident.save
@@ -54,8 +59,9 @@ class Upright::IncidentTest < ActiveSupport::TestCase
   end
 
   test "active, upcoming, and past scopes key off timestamps and resolved_at" do
-    active   = Upright::Incident.create!(title: "a", impact: "minor", status: "investigating", starts_at: 1.hour.ago)
-    resolved = Upright::Incident.create!(title: "r", impact: "minor", status: "resolved", starts_at: 2.hours.ago, resolved_at: 1.hour.ago)
+    active = upright_incidents(:reactive_other)
+    active.update!(status: "investigating", starts_at: 1.hour.ago, resolved_at: nil)
+    resolved = upright_incidents(:reactive_resolved)
 
     assert_includes Upright::Incident.active, active
     assert_not_includes Upright::Incident.active, resolved
@@ -63,16 +69,12 @@ class Upright::IncidentTest < ActiveSupport::TestCase
   end
 
   test "reactive scope excludes the maintenance subclass" do
-    incident = Upright::Incident.create!(title: "i", impact: "minor", status: "investigating", starts_at: 1.hour.ago)
-    maintenance = Upright::Maintenance.create!(title: "m", status: "in_progress", starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
-
-    assert_includes Upright::Incident.reactive, incident
-    assert_not_includes Upright::Incident.reactive, maintenance
+    assert_includes Upright::Incident.reactive, upright_incidents(:reactive_resolved)
+    assert_not_includes Upright::Incident.reactive, upright_incidents(:in_progress)
   end
 
   test "for_service filters by affected service code" do
-    incident = Upright::Incident.create!(title: "i", impact: "minor", status: "investigating",
-      starts_at: 1.hour.ago, service_codes: [ "example_app" ])
+    incident = upright_incidents(:reactive_with_service)
 
     assert_includes Upright::Incident.for_service("example_app"), incident
     assert_not_includes Upright::Incident.for_service("internal_tools"), incident
