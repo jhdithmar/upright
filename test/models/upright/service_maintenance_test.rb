@@ -59,6 +59,17 @@ class Upright::ServiceMaintenanceTest < ActiveSupport::TestCase
     assert_equal 0, yabeda_gauge_value(:service_under_maintenance, probe_service: "internal_tools")
   end
 
+  test "export_service_metrics arms suppression before a window opens but not too early" do
+    upright_incidents(:upcoming).update!(starts_at: 2.minutes.from_now, service_codes: [ "example_app" ])
+
+    Upright::Maintenance.export_service_metrics
+    assert_equal 1, yabeda_gauge_value(:service_under_maintenance, probe_service: "example_app")
+
+    upright_incidents(:upcoming).update!(starts_at: 10.minutes.from_now)
+    Upright::Maintenance.export_service_metrics
+    assert_equal 0, yabeda_gauge_value(:service_under_maintenance, probe_service: "example_app")
+  end
+
   private
     def maintain(code, using: :in_progress)
       upright_incidents(using).update!(service_codes: [ code ])

@@ -3,6 +3,10 @@ class Upright::Maintenance < Upright::Incident
   TERMINAL_STATUSES = %w[ completed ]
   IMPACTS           = %w[ maintenance ]
 
+  SUPPRESSION_LEAD = 3.minutes
+
+  scope :suppressing, -> { where(resolved_at: nil).where(starts_at: ..SUPPRESSION_LEAD.from_now) }
+
   validates :ends_at, presence: true
   validate :ends_after_start
 
@@ -12,7 +16,7 @@ class Upright::Maintenance < Upright::Incident
 
   def self.export_service_metrics
     Upright::Service.all.each do |service|
-      Yabeda.upright_service_under_maintenance.set({ probe_service: service.code }, service.maintenance_active? ? 1 : 0)
+      Yabeda.upright_service_under_maintenance.set({ probe_service: service.code }, suppressing.for_service(service.code).exists? ? 1 : 0)
     end
   end
 
