@@ -10,6 +10,12 @@ class Upright::Maintenance < Upright::Incident
 
   def maintenance? = true
 
+  def self.export_service_metrics
+    Upright::Service.all.each do |service|
+      Yabeda.upright_service_under_maintenance.set({ probe_service: service.code }, service.maintenance_active? ? 1 : 0)
+    end
+  end
+
   def auto_advance_status(now: Time.current)
     record_update(status: "in_progress", body: "Maintenance is underway.") if scheduled? && now >= starts_at
     record_update(status: "completed",  body: "Maintenance is complete.")  if in_progress? && now >= ends_at

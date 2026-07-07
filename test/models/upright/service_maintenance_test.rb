@@ -50,6 +50,15 @@ class Upright::ServiceMaintenanceTest < ActiveSupport::TestCase
     assert_equal :major_outage, Upright::Service.overall_status
   end
 
+  test "export_service_metrics reports 1 for maintained services and 0 otherwise" do
+    maintain "example_app"
+
+    Upright::Maintenance.export_service_metrics
+
+    assert_equal 1, yabeda_gauge_value(:service_under_maintenance, probe_service: "example_app")
+    assert_equal 0, yabeda_gauge_value(:service_under_maintenance, probe_service: "internal_tools")
+  end
+
   private
     def maintain(code, using: :in_progress)
       upright_incidents(using).update!(service_codes: [ code ])
