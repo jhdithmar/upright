@@ -3,7 +3,7 @@ class Upright::Maintenance < Upright::Incident
   TERMINAL_STATUSES = %w[ completed ]
   IMPACTS           = %w[ maintenance ]
 
-  SUPPRESSION_LEAD = 3.minutes
+  SUPPRESSION_LEAD = 1.minute
 
   scope :suppressing, -> { where(resolved_at: nil).where(starts_at: ..SUPPRESSION_LEAD.from_now) }
 
