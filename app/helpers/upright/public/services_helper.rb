@@ -1,4 +1,9 @@
+require "local_time"
+require LocalTime::Engine.root.join("app/helpers/local_time_helper").to_s
+
 module Upright::Public::ServicesHelper
+  include LocalTimeHelper
+
   OVERALL_STATUS_LABELS = {
     operational:    "All Systems Operational",
     degraded:       "Some Systems Degraded",
@@ -21,6 +26,15 @@ module Upright::Public::ServicesHelper
       "#{start.to_fs(:month_day_at)} – #{finish.to_fs(:month_day_at_zone)}"
     else
       start.to_fs(:month_day_at_zone)
+    end
+  end
+
+  def local_maintenance_window(event)
+    if event.ends_at
+      safe_join([ local_time(event.starts_at, format: :month_day_at),
+                  local_time(event.ends_at, format: :month_day_at_zone) ], " – ")
+    else
+      local_time(event.starts_at, format: :month_day_at_zone)
     end
   end
 

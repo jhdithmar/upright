@@ -9,7 +9,7 @@
         </div>
 
         <% if event.maintenance? %>
-          <p class="event__meta"><%= maintenance_window_description(event) %></p>
+          <p class="event__meta"><%= local_maintenance_window(event) %></p>
         <% end %>
 
         <% if event.services.any? %>
@@ -19,7 +19,7 @@
         <% if update = event.updates.first %>
           <p class="event__update">
             <%= update.body %>
-            <time class="event__time" datetime="<%= update.created_at.iso8601 %>"><%= update.created_at.strftime("%b %-d, %H:%M %Z") %></time>
+            <%= local_time update.created_at, format: :month_day_at_zone, class: "event__time" %>
           </p>
         <% end %>
       <% end %>
