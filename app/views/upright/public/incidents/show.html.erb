@@ -22,7 +22,7 @@
       <li class="incident-detail__update">
         <span class="incident-detail__update-status"><%= status_label(update.status) %></span>
         <time class="incident-detail__update-time" datetime="<%= update.created_at.iso8601 %>"><%= update.created_at.strftime("%b %-d, %Y · %H:%M %Z") %></time>
-        <p class="incident-detail__update-body"><%= update.body %></p>
+        <% if update.body.present? %><p class="incident-detail__update-body"><%= update.body %></p><% end %>
       </li>
     <% end %>
   </ol>

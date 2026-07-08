@@ -34,11 +34,20 @@ class Upright::IncidentTest < ActiveSupport::TestCase
   test "record_update returns an unpersisted update and leaves the incident unchanged when invalid" do
     incident = activate(upright_incidents(:reactive_resolved))
 
-    update = incident.record_update(status: "monitoring", body: "")
+    update = incident.record_update(status: "", body: "Something changed.")
 
     assert_not update.persisted?
-    assert update.errors[:body].any?
+    assert update.errors[:status].any?
     assert_equal "investigating", incident.reload.status
+  end
+
+  test "record_update accepts a blank message" do
+    incident = activate(upright_incidents(:reactive_resolved))
+
+    update = incident.record_update(status: "monitoring", body: "")
+
+    assert update.persisted?
+    assert_equal "monitoring", incident.reload.status
   end
 
   test "creating an incident seeds an initial update from the default status" do
