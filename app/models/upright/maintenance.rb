@@ -5,7 +5,7 @@ class Upright::Maintenance < Upright::Incident
 
   SUPPRESSION_LEAD = 1.minute
 
-  scope :suppressing, -> { where(resolved_at: nil).where(starts_at: ..SUPPRESSION_LEAD.from_now) }
+  scope :suppressing, -> { unresolved.where(starts_at: ..SUPPRESSION_LEAD.from_now) }
 
   validates :ends_at, presence: true
   validate :ends_after_start
