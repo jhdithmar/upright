@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_07_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_09_000001) do
   create_table "upright_incident_affected_services", force: :cascade do |t|
     t.integer "incident_id", null: false
     t.string "service_code", null: false
@@ -22,6 +22,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_07_000001) do
   create_table "upright_incident_updates", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
+    t.string "created_by"
     t.integer "incident_id", null: false
     t.string "status", null: false
     t.index ["incident_id"], name: "index_upright_incident_updates_on_incident_id"
@@ -29,6 +30,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_07_000001) do
 
   create_table "upright_incidents", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.string "created_by"
     t.datetime "ends_at"
     t.string "impact", null: false
     t.datetime "resolved_at"
@@ -37,6 +39,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_07_000001) do
     t.string "title", null: false
     t.string "type"
     t.datetime "updated_at", null: false
+    t.string "updated_by"
     t.index ["resolved_at", "starts_at"], name: "index_upright_incidents_on_resolved_at_and_starts_at"
     t.index ["type", "starts_at"], name: "index_upright_incidents_on_type_and_starts_at"
   end
