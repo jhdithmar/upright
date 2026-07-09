@@ -97,12 +97,12 @@ class Upright::IncidentTest < ActiveSupport::TestCase
   end
 
   test "declaring an incident stamps created_by on the incident and its initial update" do
-    acting_as "Grace Hopper"
+    acting_as "Eron Nicholson"
 
     incident = Upright::Incident.create!(title: "New outage", impact: "minor", starts_at: Time.current)
 
-    assert_equal "Grace Hopper", incident.created_by
-    assert_equal "Grace Hopper", incident.updates.first.created_by
+    assert_equal "Eron Nicholson", incident.created_by
+    assert_equal "Eron Nicholson", incident.updates.first.created_by
     assert_nil incident.updated_by
   end
 
@@ -110,21 +110,21 @@ class Upright::IncidentTest < ActiveSupport::TestCase
     incident = upright_incidents(:reactive_resolved)
     assert_nil incident.updated_by
 
-    acting_as "Grace Hopper"
+    acting_as "Eron Nicholson"
     incident.update!(title: "Renamed outage")
 
-    assert_equal "Grace Hopper", incident.updated_by
+    assert_equal "Eron Nicholson", incident.updated_by
   end
 
   test "posting an update stamps created_by from the current user" do
     incident = activate(upright_incidents(:reactive_resolved))
-    acting_as "Katherine Johnson"
+    acting_as "Silvia Uberti"
 
     update = incident.record_update(status: "monitoring", body: "Watching recovery.")
 
     assert update.persisted?
-    assert_equal "Katherine Johnson", update.created_by
-    assert_equal "Katherine Johnson", incident.reload.updated_by
+    assert_equal "Silvia Uberti", update.created_by
+    assert_equal "Silvia Uberti", incident.reload.updated_by
   end
 
   test "updates posted without a current user are authored by System" do
