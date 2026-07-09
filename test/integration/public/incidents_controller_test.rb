@@ -4,9 +4,8 @@ class Upright::Public::IncidentsControllerTest < ActionDispatch::IntegrationTest
   setup { on_subdomain Upright.configuration.public_status_subdomain }
 
   test "incident detail never shows the author" do
-    incident = Upright::Incident.create!(
-      title: "Public incident", impact: "minor", starts_at: Time.current, created_by: "Ada Lovelace"
-    )
+    incident = upright_incidents(:reactive_resolved)
+    assert_equal "Ada Lovelace", incident.created_by
 
     get upright.public_incident_path(incident)
 

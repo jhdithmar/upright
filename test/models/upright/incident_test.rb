@@ -97,21 +97,21 @@ class Upright::IncidentTest < ActiveSupport::TestCase
   end
 
   test "declaring an incident stamps created_by on the incident and its initial update" do
-    Upright::Current.user = Upright::User.new(name: "Ada Lovelace", email: "ada@example.com")
+    Upright::Current.user = Upright::User.new(name: "Grace Hopper", email: "grace@example.com")
 
-    incident = Upright::Incident.create!(title: "x", impact: "minor", starts_at: Time.current)
+    incident = Upright::Incident.create!(title: "New outage", impact: "minor", starts_at: Time.current)
 
-    assert_equal "Ada Lovelace", incident.created_by
-    assert_equal "Ada Lovelace", incident.updates.first.created_by
+    assert_equal "Grace Hopper", incident.created_by
+    assert_equal "Grace Hopper", incident.updates.first.created_by
     assert_nil incident.updated_by
   end
 
   test "editing an incident stamps updated_by from the current user" do
-    incident = Upright::Incident.create!(title: "x", impact: "minor", starts_at: Time.current)
+    incident = upright_incidents(:reactive_resolved)
     assert_nil incident.updated_by
 
     Upright::Current.user = Upright::User.new(name: "Grace Hopper", email: "grace@example.com")
-    incident.update!(title: "y")
+    incident.update!(title: "Renamed outage")
 
     assert_equal "Grace Hopper", incident.updated_by
   end
@@ -127,14 +127,13 @@ class Upright::IncidentTest < ActiveSupport::TestCase
     assert_equal "Katherine Johnson", incident.reload.updated_by
   end
 
-  test "system-posted maintenance updates carry no author" do
-    maintenance = Upright::Maintenance.create!(title: "Upgrade", starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+  test "updates posted without a current user are authored by System" do
+    maintenance = upright_incidents(:started_scheduled)
 
     maintenance.auto_advance_status
 
     update = maintenance.updates.find_by(status: "in_progress")
-    assert_not_nil update
-    assert_nil update.created_by
+    assert_equal "System", update.created_by
     assert_nil maintenance.reload.updated_by
   end
 
