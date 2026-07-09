@@ -20,7 +20,9 @@ development:
   persistent:
     <<: *default
     database: storage/development_persistent.sqlite3
-    migrations_paths: ../../db/persistent_migrate
+    migrations_paths:
+      - db/persistent_migrate
+      - ../../db/persistent_migrate
   queue:
     <<: *default
     database: storage/development_queue.sqlite3
@@ -36,7 +38,9 @@ test:
   persistent:
     <<: *default
     database: storage/test_persistent.sqlite3
-    migrations_paths: ../../db/persistent_migrate
+    migrations_paths:
+      - db/persistent_migrate
+      - ../../db/persistent_migrate
   queue:
     <<: *default
     database: storage/test_queue.sqlite3

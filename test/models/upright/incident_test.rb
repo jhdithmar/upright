@@ -96,6 +96,47 @@ class Upright::IncidentTest < ActiveSupport::TestCase
     assert_not_includes Upright::Incident.for_service("internal_tools"), incident
   end
 
+  test "declaring an incident stamps created_by on the incident and its initial update" do
+    acting_as "Eron Nicholson"
+
+    incident = Upright::Incident.create!(title: "New outage", impact: "minor", starts_at: Time.current)
+
+    assert_equal "Eron Nicholson", incident.created_by
+    assert_equal "Eron Nicholson", incident.updates.first.created_by
+    assert_nil incident.updated_by
+  end
+
+  test "editing an incident stamps updated_by from the current user" do
+    incident = upright_incidents(:reactive_resolved)
+    assert_nil incident.updated_by
+
+    acting_as "Eron Nicholson"
+    incident.update!(title: "Renamed outage")
+
+    assert_equal "Eron Nicholson", incident.updated_by
+  end
+
+  test "posting an update stamps created_by from the current user" do
+    incident = activate(upright_incidents(:reactive_resolved))
+    acting_as "Silvia Uberti"
+
+    update = incident.record_update(status: "monitoring", body: "Watching recovery.")
+
+    assert update.persisted?
+    assert_equal "Silvia Uberti", update.created_by
+    assert_equal "Silvia Uberti", incident.reload.updated_by
+  end
+
+  test "updates posted without a current user are authored by System" do
+    maintenance = upright_incidents(:started_scheduled)
+
+    maintenance.auto_advance_status
+
+    update = maintenance.updates.find_by(status: "in_progress")
+    assert_equal "System", update.created_by
+    assert_nil maintenance.reload.updated_by
+  end
+
   private
     def activate(incident, **overrides)
       incident.update!({ status: "investigating", starts_at: 1.hour.ago, resolved_at: nil }.merge(overrides))

@@ -25,6 +25,8 @@ class Upright::Incident < Upright::PersistentRecord
   validates :impact, inclusion: { in: ->(incident) { incident.class::IMPACTS } }
 
   before_validation :set_default_status, on: :create
+  before_create { self.created_by ||= Upright::Current.user&.name }
+  before_update { self.updated_by = Upright::Current.user.name if Upright::Current.user }
   after_create :record_initial_update
 
   def maintenance? = false
