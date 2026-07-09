@@ -97,7 +97,7 @@ class Upright::IncidentTest < ActiveSupport::TestCase
   end
 
   test "declaring an incident stamps created_by on the incident and its initial update" do
-    Upright::Current.user = Upright::User.new(name: "Grace Hopper", email: "grace@example.com")
+    acting_as "Grace Hopper"
 
     incident = Upright::Incident.create!(title: "New outage", impact: "minor", starts_at: Time.current)
 
@@ -110,7 +110,7 @@ class Upright::IncidentTest < ActiveSupport::TestCase
     incident = upright_incidents(:reactive_resolved)
     assert_nil incident.updated_by
 
-    Upright::Current.user = Upright::User.new(name: "Grace Hopper", email: "grace@example.com")
+    acting_as "Grace Hopper"
     incident.update!(title: "Renamed outage")
 
     assert_equal "Grace Hopper", incident.updated_by
@@ -118,7 +118,7 @@ class Upright::IncidentTest < ActiveSupport::TestCase
 
   test "posting an update stamps created_by from the current user" do
     incident = activate(upright_incidents(:reactive_resolved))
-    Upright::Current.user = Upright::User.new(name: "Katherine Johnson", email: "katherine@example.com")
+    acting_as "Katherine Johnson"
 
     update = incident.record_update(status: "monitoring", body: "Watching recovery.")
 

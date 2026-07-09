@@ -26,6 +26,7 @@ module ActiveSupport
     # multiple Playwright containers for browser-based probes.
     parallelize(workers: 1)
 
+    include CurrentUserHelper
     include IpApiHelper
     include MtrHelper
     include RailsEnvHelper
